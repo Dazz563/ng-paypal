@@ -12,6 +12,16 @@ export interface ProductModel {
 	quantity?: number;
 	type: string;
 	image: string;
+	category_id: number;
+	category: CategoryModel;
+	created_at: string;
+	updated_at: string;
+}
+export interface CategoryModel {
+	id: number;
+	name: string;
+	created_at: string;
+	updated_at: string;
 }
 
 @Injectable({
@@ -23,7 +33,7 @@ export class ProductService {
 	cartList: any[] = [];
 
 	getAllProducts() {
-		return this.http.get(`${environment.apiUrl}/product/all-products`).pipe(
+		return this.http.get(`${environment.apiUrl}/product`).pipe(
 			map((res: any) => res['data']),
 			tap((products) => {
 				products.forEach((product: ProductModel) => {
@@ -31,6 +41,18 @@ export class ProductService {
 				});
 			})
 		);
+	}
+
+	getAllCategories() {
+		return this.http.get(`${environment.apiUrl}/category`).pipe(map((res: any) => res['data']));
+	}
+
+	getByCategoriesId(catId: number) {
+		return this.http.get(`${environment.apiUrl}/category/${catId}`).pipe(map((res: any) => res['data']));
+	}
+
+	searchProducts(term: string) {
+		return this.http.get(`${environment.apiUrl}/product/search/${term}`).pipe(map((res: any) => res['data']));
 	}
 
 	getCartList() {

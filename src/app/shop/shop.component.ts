@@ -1,25 +1,68 @@
-import {Component, OnInit} from '@angular/core';
-import {ProductModel, ProductService} from '../services/product.service';
-import {Observable} from 'rxjs';
+import {Component, OnInit, AfterViewInit, ViewChild, ElementRef} from '@angular/core';
+import {CategoryModel, ProductModel, ProductService} from '../services/product.service';
+import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMap} from 'rxjs';
 
 @Component({
 	selector: 'app-shop',
 	templateUrl: './shop.component.html',
 	styleUrls: ['./shop.component.scss'],
 })
-export class ShopComponent implements OnInit {
-	products$!: Observable<ProductModel[]>;
+export class ShopComponent implements OnInit, AfterViewInit {
+	// products$!: Observable<ProductModel[]>;
+	products: ProductModel[] = [];
+	categories$!: Observable<CategoryModel[]>;
 	cartList: ProductModel[] = [];
 	subTotal!: number;
+
+	// search input
+	@ViewChild('searchInput') searchInput!: ElementRef;
 
 	constructor(private productService: ProductService) {}
 
 	ngOnInit(): void {
-		this.products$ = this.productService.getAllProducts();
+		this.getProducts();
+		this.categories$ = this.productService.getAllCategories();
+		this.productService.getByCategoriesId(2).subscribe((res) => console.log(res));
 
 		// Get the cart list from the product service
 		this.productService.loadCart();
 		this.cartList = this.productService.getCartList();
+	}
+
+	// search debounces to avoid rapid calls to the server
+	ngAfterViewInit(): void {
+		fromEvent<any>(this.searchInput.nativeElement, 'keyup')
+			.pipe(
+				debounceTime(500),
+				distinctUntilChanged(),
+				switchMap((event) => {
+					const term = event.target.value.trim();
+					if (term === '') {
+						return this.productService.getAllProducts();
+					} else {
+						return this.productService.searchProducts(term);
+					}
+				})
+			)
+			.subscribe((products: any) => {
+				console.log('products search res', products);
+
+				this.products = products;
+			});
+	}
+
+	getProducts() {
+		this.productService.getAllProducts().subscribe((res) => {
+			this.products = res;
+			console.log(res);
+		});
+	}
+
+	filterByCategory(catId: number) {
+		this.productService.getByCategoriesId(catId).subscribe((res) => {
+			this.products = res;
+			console.log(res);
+		});
 	}
 
 	// Add a product to the cart

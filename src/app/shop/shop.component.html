@@ -1,6 +1,18 @@
+<mat-form-field class="example-form-field" appearance="outline">
+	<mat-label>Search</mat-label>
+	<input #searchInput matInput type="text" />
+</mat-form-field>
+
+<mat-form-field appearance="outline">
+	<mat-label>Select</mat-label>
+	<mat-select (selectionChange)="filterByCategory($event.value)">
+		<mat-option *ngFor="let cat of categories$ | async" [value]="cat.id">{{ cat.name }}</mat-option>
+	</mat-select>
+</mat-form-field>
+
 <div class="prod-container" [ngClass]="{'single-column': isCartEmpty()}">
 	<div class="prod-list">
-		<mat-card class="product" *ngFor="let product of products$ | async">
+		<mat-card class="product" *ngFor="let product of products">
 			<mat-card-header>
 				<mat-card-title align="center">{{ product.name }}</mat-card-title>
 				<mat-card-subtitle>{{ product.description }}</mat-card-subtitle>
@@ -8,11 +20,11 @@
 			<img class="prod-image" mat-card-image src="{{ product.image }}" />
 			<mat-card-content>
 				<p class="price">{{ product.price | currency }}</p>
-				<p class="type">{{ product.type }}</p>
+				<p class="type">{{ product.category.name }}</p>
 			</mat-card-content>
 			<mat-card-actions>
 				<button color="primary" (click)="addToCart(product)" mat-raised-button>Add to cart</button>
-				<button mat-raised-button>View</button>
+				<button mat-raised-button>View & Reviews</button>
 			</mat-card-actions>
 		</mat-card>
 	</div>
