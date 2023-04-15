@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {IPayPalConfig, ICreateOrderRequest} from 'ngx-paypal'; // Import the necessary PayPal interfaces from ngx-paypal
 import {environment} from 'src/environments/environment.development'; // Import the environment configuration
+import {ProductModel} from '../services/product.service';
+import {Router} from '@angular/router';
 
 @Component({
 	selector: 'app-shopping-cart',
@@ -10,11 +12,17 @@ import {environment} from 'src/environments/environment.development'; // Import 
 export class ShoppingCartComponent implements OnInit {
 	public payPalConfig?: IPayPalConfig; // Define a public property to store the PayPal configuration
 	showSuccess = false; // Define a boolean property to track the success state of the checkout
-	value = 9.99; // Define a value property that will come from the cart or order
+	value = JSON.parse(localStorage.getItem('cart_total') as any) || []; // Define a value property that will come from the cart or order
+	items: ProductModel[] = JSON.parse(localStorage.getItem('cart_items') as any) || []; // Define a value property that will come from the cart or order
+	isLoading = true;
 
-	constructor() {}
+	constructor(private router: Router) {}
 	ngOnInit(): void {
-		this.initConfig(); // Call the initConfig method to set up the PayPal configuration
+		setTimeout(() => {
+			this.initConfig(); // Call the initConfig method to set up the PayPal configuration
+			this.isLoading = false;
+		}, 1000);
+		console.log(this.items);
 	}
 
 	private initConfig(): void {
@@ -38,17 +46,17 @@ export class ShoppingCartComponent implements OnInit {
 									},
 								},
 							},
-							items: [
-								{
-									name: 'Enterprise Subscription', // Set the name of the item to Enterprise Subscription
-									quantity: '1',
-									category: 'DIGITAL_GOODS',
+							items: this.items.map((item) => {
+								return {
+									name: item.name,
+									quantity: `${item.quantity}`, // MUST BE STRING
+									category: data.type,
 									unit_amount: {
 										currency_code: 'USD',
-										value: `${this.value}`,
+										value: `${item.price}`, // MUST BE STRING
 									},
-								},
-							],
+								};
+							}),
 						},
 					],
 				},
@@ -59,8 +67,14 @@ export class ShoppingCartComponent implements OnInit {
 				label: 'paypal',
 				layout: 'vertical',
 				color: 'silver',
+				shape: 'pill',
 			},
 			onApprove: (data, actions) => {
+				/**
+				 * Captures the funds from the transaction and shows a message to the buyer to let them know the transaction is successful.
+				 * The method is called after the buyer approves the transaction on paypal.com.
+				 * Because this is a client-side call, PayPal calls the Orders API on your behalf, so you don't need to provide the headers and body.
+				 */
 				console.log('onApprove - transaction was approved, but not authorized', data, actions);
 				actions.order.get().then((details: any) => {
 					console.log('onApprove - you can get full order details inside onApprove: ', details);
@@ -69,14 +83,30 @@ export class ShoppingCartComponent implements OnInit {
 			onClientAuthorization: (data) => {
 				console.log('onClientAuthorization - you should probably inform your server about completed transaction at this point', data);
 				this.showSuccess = true; // Set the showSuccess property to true to indicate that the checkout was successful
+
+				// Clear localstorage
+				localStorage.removeItem('cart_items');
+				localStorage.removeItem('cart_total');
+
+				this.router.navigateByUrl('/shop');
 			},
 			onCancel: (data, actions) => {
+				/**
+				 * When a buyer cancels a payment, they typically return to the parent page.
+				 * You can instead use the onCancel function to show a cancellation page or return to the shopping cart.
+				 */
 				console.log('OnCancel', data, actions);
 			},
 			onError: (err) => {
+				// If an error prevents buyer checkout, alert the user that an error has occurred with the buttons using the onError callback
 				console.log('OnError', err);
 			},
 			onClick: (data, actions) => {
+				/**
+				 * Called when the button first renders.
+				 * You can use it for validations on your page if you are unable to do so prior to rendering.
+				 * For example, enable buttons when form validation passes or disable if it fails
+				 */
 				console.log('onClick', data, actions);
 			},
 		};

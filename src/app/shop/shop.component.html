@@ -2,7 +2,7 @@
 	<div class="prod-list">
 		<mat-card class="product" *ngFor="let product of products$ | async">
 			<mat-card-header>
-				<mat-card-title>{{ product.name }}</mat-card-title>
+				<mat-card-title align="center">{{ product.name }}</mat-card-title>
 				<mat-card-subtitle>{{ product.description }}</mat-card-subtitle>
 			</mat-card-header>
 			<img class="prod-image" mat-card-image src="{{ product.image }}" />
@@ -12,7 +12,7 @@
 			</mat-card-content>
 			<mat-card-actions>
 				<button color="primary" (click)="addToCart(product)" mat-raised-button>Add to cart</button>
-				<button mat-raised-button>Share</button>
+				<button mat-raised-button>View</button>
 			</mat-card-actions>
 		</mat-card>
 	</div>

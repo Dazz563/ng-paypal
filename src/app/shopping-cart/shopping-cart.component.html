@@ -1,3 +1,8 @@
 <div class="card">
+	<div class="total">
+		<h2>Your total</h2>
+		<h2>{{ value | currency }}</h2>
+	</div>
+	<div style="margin: auto" *ngIf="isLoading" class="spinner"></div>
 	<ngx-paypal [config]="payPalConfig"></ngx-paypal>
 </div>
