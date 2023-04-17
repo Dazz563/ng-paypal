@@ -1,8 +1,34 @@
-<div class="card">
-	<div class="total">
-		<h2>Your total</h2>
-		<h2>{{ value | currency }}</h2>
+<div class="shop-cart-container">
+	<div class="cart-details">
+		<div class="cart-total">
+			<h3>Cart</h3>
+			<p>Cart Total ${{ calcTotal | number : '1.2-2' }}</p>
+		</div>
+		<div class="cart-item" *ngFor="let item of cartList; let i = index">
+			<p>{{ item.name }} {{ item.price ? (item.price | currency) : '' }}</p>
+			<p>{{ item.longDescription }}</p>
+
+			<div>
+				<mat-form-field appearance="outline">
+					<mat-label>Quantity</mat-label>
+					<input type="number" matInput min="1" [(ngModel)]="item.quantity" [ngModelOptions]="{standalone: true}" (change)="changeQuantity(item, i)" />
+				</mat-form-field>
+			</div>
+
+			<div class="cart-footer">
+				<button mat-raised-button color="warn" (click)="removeFromCart(item)">Remove</button>
+				<p>Total ${{ item.quantity && item.price ? (item.quantity * item.price | number : '1.2-2') : '' }}</p>
+			</div>
+		</div>
 	</div>
-	<div style="margin: auto" *ngIf="isLoading" class="spinner"></div>
-	<ngx-paypal [config]="payPalConfig"></ngx-paypal>
+	<div class="paypal-details">
+		<div class="card">
+			<div class="total">
+				<h2>Your total</h2>
+				<h2>{{ value | currency }}</h2>
+			</div>
+			<div style="margin: auto" *ngIf="isLoading" class="spinner"></div>
+			<ngx-paypal [config]="payPalConfig"></ngx-paypal>
+		</div>
+	</div>
 </div>

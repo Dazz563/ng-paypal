@@ -1,6 +1,8 @@
 import {Component, OnInit, AfterViewInit, ViewChild, ElementRef} from '@angular/core';
 import {CategoryModel, ProductModel, ProductService} from '../services/product.service';
 import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMap} from 'rxjs';
+import {viewProductDialog} from './view-product/view-product.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
 	selector: 'app-shop',
@@ -8,25 +10,21 @@ import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMa
 	styleUrls: ['./shop.component.scss'],
 })
 export class ShopComponent implements OnInit, AfterViewInit {
-	// products$!: Observable<ProductModel[]>;
 	products: ProductModel[] = [];
 	categories$!: Observable<CategoryModel[]>;
-	cartList: ProductModel[] = [];
-	subTotal!: number;
 
 	// search input
 	@ViewChild('searchInput') searchInput!: ElementRef;
 
-	constructor(private productService: ProductService) {}
+	constructor(
+		private productService: ProductService, //
+		private modal: MatDialog
+	) {}
 
 	ngOnInit(): void {
 		this.getProducts();
 		this.categories$ = this.productService.getAllCategories();
 		this.productService.getByCategoriesId(2).subscribe((res) => console.log(res));
-
-		// Get the cart list from the product service
-		this.productService.loadCart();
-		this.cartList = this.productService.getCartList();
 	}
 
 	// search debounces to avoid rapid calls to the server
@@ -70,42 +68,20 @@ export class ShopComponent implements OnInit, AfterViewInit {
 		if (!this.productService.productInCart(product)) {
 			product.quantity = 1;
 			this.productService.addToCart(product);
-			this.cartList = [...this.productService.getCartList()];
-			this.subTotal = product.price;
+			// this.cartList = [...this.productService.getCartList()];
+			// this.productService.increaseCartQuantity();
 		}
 	}
 
-	// Update the quantity of a product in the cart
-	changeQuantity(item: ProductModel, idx: number) {
-		const qty = item.quantity;
-		const amt = item.price;
-
-		this.subTotal = amt * qty!;
-
-		this.productService.saveCart();
-	}
-
-	// Remove a product from the cart
-	removeFromCart(item: ProductModel) {
-		this.productService.removeItemFromCart(item);
-		this.cartList = this.productService.getCartList();
-	}
-
-	get calcTotal() {
-		return this.cartList.reduce(
-			(sum, item) => ({
-				quantity: 1,
-				price: sum.price + (item?.quantity || 0) * (item?.price || 0),
-			}),
-			{quantity: 1, price: 0}
-		).price;
-	}
-
-	checkout() {
-		localStorage.setItem('cart_total', JSON.stringify(this.calcTotal));
-	}
-
-	isCartEmpty(): boolean {
-		return this.cartList.length === 0;
+	viewProduct(product: ProductModel) {
+		viewProductDialog(this.modal, product, 'view').subscribe({
+			next: (dialogRes) => {
+				if (dialogRes) {
+				}
+			},
+			error: (err) => {
+				console.log(err);
+			},
+		});
 	}
 }

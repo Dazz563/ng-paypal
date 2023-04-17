@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {Observable, map, tap} from 'rxjs';
+import {BehaviorSubject, Observable, map, tap} from 'rxjs';
 import {environment} from 'src/environments/environment.development';
 
 export interface ProductModel {
@@ -12,24 +12,39 @@ export interface ProductModel {
 	quantity?: number;
 	type: string;
 	image: string;
-	category_id: number;
-	category: CategoryModel;
-	created_at: string;
-	updated_at: string;
+	category_id?: number;
+	category?: CategoryModel;
+	createdA: string;
+	updatedAt: string;
+	reviews?: ReviewModel[];
 }
 export interface CategoryModel {
 	id: number;
 	name: string;
-	created_at: string;
-	updated_at: string;
+	createdAt: string;
+	updatedAt: string;
+}
+export interface ReviewModel {
+	id: number;
+	rating: number;
+	description: string;
+	createdAt: string;
+	updatedAt: string;
+	product_id?: number;
 }
 
 @Injectable({
 	providedIn: 'root',
 })
 export class ProductService {
-	constructor(private http: HttpClient) {}
+	private cartTotal$ = new BehaviorSubject<number>(0);
+	constructor(private http: HttpClient) {
+		this.loadCart();
+		let cartItems = JSON.parse(localStorage.getItem('cart_items') as any) || [];
+		this.cartTotal$.next(cartItems.length);
+	}
 
+	cartCount$ = this.cartTotal$.asObservable();
 	cartList: any[] = [];
 
 	getAllProducts() {
@@ -55,6 +70,8 @@ export class ProductService {
 		return this.http.get(`${environment.apiUrl}/product/search/${term}`).pipe(map((res: any) => res['data']));
 	}
 
+	// Cart Logic
+
 	getCartList() {
 		return this.cartList;
 	}
@@ -63,9 +80,20 @@ export class ProductService {
 		localStorage.setItem('cart_items', JSON.stringify(this.cartList));
 	}
 
-	addToCart(product: any) {
-		this.cartList.push(product);
-		this.saveCart();
+	addToCart(product: ProductModel) {
+		let productInCart = this.cartList.find((p) => p.id === product.id);
+		if (productInCart) {
+			return;
+		} else {
+			productInCart = {...product, quantity: 1};
+			this.cartList.push(productInCart);
+			this.saveCart();
+			this.cartTotal$.next(this.cartList.length);
+		}
+	}
+
+	increaseCartQuantity() {
+		this.cartTotal$.next(this.cartTotal$.value + 1);
 	}
 
 	loadCart() {
@@ -81,9 +109,17 @@ export class ProductService {
 
 		//check if product is in cart
 		if (index > -1) {
-			this.cartList.splice(index, 1);
+			const productInCart = this.cartList[index];
+			if (productInCart.quantity > 1) {
+				productInCart.quantity -= 1;
+			} else {
+				this.cartList.splice(index, 1);
+			}
 			this.saveCart();
 		}
+
+		// update cart total
+		this.cartTotal$.next(this.cartList.length);
 	}
 
 	clearProducts() {

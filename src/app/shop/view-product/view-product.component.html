@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>{{ data.name }}</h2>
+<mat-dialog-content class="mat-typography">
+	<h3>{{ data.description }}</h3>
+	<img [src]="data.image" alt="" width="250" />
+	<p>{{ data.longDescription }}</p>
+	<p>Price {{ data.price | currency }}</p>
+	<h3>Reviews</h3>
+	<ng-container *ngFor="let rev of data.reviews">
+		<div class="review-container">
+			<p>{{ rev.createdAt | date }} Rating: {{ rev.rating }}</p>
+			<div>
+				<p>{{ rev.description }}</p>
+			</div>
+		</div>
+		<hr />
+	</ng-container>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+	<button mat-button mat-dialog-close>Close</button>
+	<button mat-button [mat-dialog-close]="true" cdkFocusInitial>Add cart/review</button>
+</mat-dialog-actions>

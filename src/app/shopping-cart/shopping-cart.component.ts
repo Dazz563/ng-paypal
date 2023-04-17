@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {IPayPalConfig, ICreateOrderRequest} from 'ngx-paypal'; // Import the necessary PayPal interfaces from ngx-paypal
 import {environment} from 'src/environments/environment.development'; // Import the environment configuration
-import {ProductModel} from '../services/product.service';
+import {ProductModel, ProductService} from '../services/product.service';
 import {Router} from '@angular/router';
 
 @Component({
@@ -16,13 +16,22 @@ export class ShoppingCartComponent implements OnInit {
 	items: ProductModel[] = JSON.parse(localStorage.getItem('cart_items') as any) || []; // Define a value property that will come from the cart or order
 	isLoading = true;
 
-	constructor(private router: Router) {}
+	cartList: ProductModel[] = [];
+	subTotal!: number;
+
+	constructor(
+		private router: Router, //
+		private productService: ProductService
+	) {}
 	ngOnInit(): void {
 		setTimeout(() => {
 			this.initConfig(); // Call the initConfig method to set up the PayPal configuration
 			this.isLoading = false;
 		}, 1000);
-		console.log(this.items);
+
+		// Get the cart list from the product service
+		this.productService.loadCart();
+		this.cartList = this.productService.getCartList();
 	}
 
 	private initConfig(): void {
@@ -110,5 +119,35 @@ export class ShoppingCartComponent implements OnInit {
 				console.log('onClick', data, actions);
 			},
 		};
+	}
+
+	get calcTotal() {
+		return this.cartList.reduce(
+			(sum, item) => ({
+				quantity: 1,
+				price: sum.price + (item?.quantity || 0) * (item?.price || 0),
+			}),
+			{quantity: 1, price: 0}
+		).price;
+	}
+
+	// Update the quantity of a product in the cart
+	changeQuantity(item: ProductModel, idx: number) {
+		const qty = item.quantity;
+		const amt = item.price;
+
+		this.subTotal = amt * qty!;
+
+		this.productService.saveCart();
+	}
+
+	// Remove a product from the cart
+	removeFromCart(item: ProductModel) {
+		this.productService.removeItemFromCart(item);
+		this.cartList = this.productService.getCartList();
+	}
+
+	checkout() {
+		localStorage.setItem('cart_total', JSON.stringify(this.calcTotal));
 	}
 }
