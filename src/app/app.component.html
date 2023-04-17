@@ -6,13 +6,12 @@
 
 	<span class="example-spacer"></span>
 	<!-- .mat-badge-content size is controlled by styles.scss -->
+	<button routerLink="/shop" mat-icon-button>
+		<mat-icon>storefront</mat-icon>
+	</button>
 	<button class="cart-btn" routerLink="/shopping-cart" mat-icon-button [matBadge]="cardCount" [matBadgeHidden]="cardCount === 0" matBadgePosition="below after" matBadgeSize="medium" matBadgeColor="accent">
 		<mat-icon>shopping_cart</mat-icon>
 	</button>
-
-	<!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
-		<mat-icon>share</mat-icon>
-	</button> -->
 </mat-toolbar>
 
 <router-outlet></router-outlet>

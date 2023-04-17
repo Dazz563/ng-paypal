@@ -1,31 +1,33 @@
 <div class="shop-cart-container">
 	<div class="cart-details">
-		<div class="cart-total">
-			<h3>Cart</h3>
-			<p>Cart Total ${{ calcTotal | number : '1.2-2' }}</p>
-		</div>
+		<h3 *ngIf="cartList.length > 0">Your Cart</h3>
+		<h3 *ngIf="cartList.length === 0">Oh No! Your cart is empty, go shopping!</h3>
 		<div class="cart-item" *ngFor="let item of cartList; let i = index">
-			<p>{{ item.name }} {{ item.price ? (item.price | currency) : '' }}</p>
+			<div class="cart-item-header">
+				<p>{{ item.name }} {{ item.price ? (item.price | currency) : '' }}</p>
+				<button mat-icon-button color="warn" (click)="removeFromCart(item)">
+					<mat-icon>close</mat-icon>
+				</button>
+			</div>
 			<p>{{ item.longDescription }}</p>
-
 			<div>
-				<mat-form-field appearance="outline">
+				<mat-form-field style="width: 100px" appearance="outline">
 					<mat-label>Quantity</mat-label>
 					<input type="number" matInput min="1" [(ngModel)]="item.quantity" [ngModelOptions]="{standalone: true}" (change)="changeQuantity(item, i)" />
 				</mat-form-field>
 			</div>
 
 			<div class="cart-footer">
-				<button mat-raised-button color="warn" (click)="removeFromCart(item)">Remove</button>
 				<p>Total ${{ item.quantity && item.price ? (item.quantity * item.price | number : '1.2-2') : '' }}</p>
 			</div>
+			<hr />
 		</div>
 	</div>
-	<div class="paypal-details">
+	<div *ngIf="cartList.length > 0" class="paypal-details">
 		<div class="card">
 			<div class="total">
-				<h2>Your total</h2>
-				<h2>{{ value | currency }}</h2>
+				<h2>Cart total</h2>
+				<h2>${{ calcTotal | number : '1.2-2' }}</h2>
 			</div>
 			<div style="margin: auto" *ngIf="isLoading" class="spinner"></div>
 			<ngx-paypal [config]="payPalConfig"></ngx-paypal>

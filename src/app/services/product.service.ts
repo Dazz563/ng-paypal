@@ -107,18 +107,13 @@ export class ProductService {
 	removeItemFromCart(product: ProductModel) {
 		const index = this.cartList.findIndex((p) => p.id === product.id);
 
-		//check if product is in cart
 		if (index > -1) {
-			const productInCart = this.cartList[index];
-			if (productInCart.quantity > 1) {
-				productInCart.quantity -= 1;
-			} else {
-				this.cartList.splice(index, 1);
-			}
+			// Remove the product from the cart without updating its quantity
+			this.cartList.splice(index, 1);
 			this.saveCart();
 		}
 
-		// update cart total
+		// Update cart total
 		this.cartTotal$.next(this.cartList.length);
 	}
 

@@ -1,7 +1,21 @@
 .shop-cart-container {
 	display: grid;
-	grid-template-columns: auto auto;
-	.card-details {
+	grid-template-columns: 2fr 1fr;
+	.cart-details {
+		padding: 0 20px;
+		.cart-item {
+			.cart-item-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			.cart-footer {
+				p {
+					margin-top: 0;
+					text-align: right;
+				}
+			}
+		}
 	}
 	.paypal-details {
 		.card {
@@ -10,7 +24,7 @@
 			padding: 20px;
 			border-radius: 10px;
 			width: 400px;
-			margin: 20px auto;
+			margin: 20px 20px;
 			.total {
 				display: flex;
 				justify-content: space-between;

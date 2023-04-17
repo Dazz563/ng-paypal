@@ -47,11 +47,11 @@ export class ShoppingCartComponent implements OnInit {
 						{
 							amount: {
 								currency_code: 'USD', // Set the currency code to USD
-								value: `${this.value}`, // Set the value of the order to the value property defined above
+								value: `${this.calcTotal}`, // Set the value of the order to the value property defined above
 								breakdown: {
 									item_total: {
 										currency_code: 'USD',
-										value: `${this.value}`,
+										value: `${this.calcTotal}`,
 									},
 								},
 							},
