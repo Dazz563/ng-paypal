@@ -11,11 +11,13 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatDialogModule} from '@angular/material/dialog';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
 	declarations: [ShortenPipe],
 	imports: [
 		CommonModule, //
+		ReactiveFormsModule,
 		MatButtonModule,
 		MatCardModule,
 		MatInputModule,
@@ -28,6 +30,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 	],
 	exports: [
 		MatButtonModule, //
+		ReactiveFormsModule,
 		MatCardModule,
 		MatInputModule,
 		MatFormFieldModule,

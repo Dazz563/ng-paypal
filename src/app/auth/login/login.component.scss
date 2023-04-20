@@ -1,0 +1,28 @@
+.auth-container {
+	mat-card-header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding-bottom: 1rem;
+		mat-card-subtitle {
+			margin: 10px;
+		}
+		.auth-change {
+			cursor: pointer;
+			font-weight: bolder;
+		}
+		.auth-change:hover {
+			text-decoration: underline;
+		}
+	}
+	mat-card-actions {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		button {
+			width: 85%;
+			margin: 5px;
+		}
+	}
+}

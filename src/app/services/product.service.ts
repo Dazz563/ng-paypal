@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, map, tap} from 'rxjs';
+import {BehaviorSubject, catchError, map, tap} from 'rxjs';
 import {environment} from 'src/environments/environment.development';
 
 export interface ProductModel {
@@ -54,6 +54,12 @@ export class ProductService {
 				products.forEach((product: ProductModel) => {
 					return {...product, quantity: 0};
 				});
+			}),
+			catchError((err) => {
+				if (err.error.message === 'Invalid token') {
+					throw new Error('Invalid token');
+				}
+				throw new Error(err);
 			})
 		);
 	}

@@ -1,0 +1,26 @@
+<mat-card class="auth-container">
+	<mat-card-header>
+		<mat-card-title>Register</mat-card-title>
+		<mat-card-subtitle>Back to <span class="auth-change" (click)="changeAuthState()">login</span> </mat-card-subtitle>
+	</mat-card-header>
+	<mat-card-content>
+		<form [formGroup]="registerForm">
+			<mat-form-field appearance="outline" [hideRequiredMarker]="true">
+				<mat-label>Username</mat-label>
+				<input type="text" formControlName="username" matInput />
+			</mat-form-field>
+			<mat-form-field appearance="outline" [hideRequiredMarker]="true">
+				<mat-label>Email</mat-label>
+				<input type="email" formControlName="email" matInput />
+			</mat-form-field>
+			<mat-form-field appearance="outline" [hideRequiredMarker]="true">
+				<mat-label>Password</mat-label>
+				<input type="password" formControlName="password" matInput />
+			</mat-form-field>
+		</form>
+	</mat-card-content>
+	<mat-card-actions>
+		<button (click)="onRegister()" mat-raised-button>Register</button>
+		<!-- <button color="primary" mat-raised-button>Add to cart</button> -->
+	</mat-card-actions>
+</mat-card>

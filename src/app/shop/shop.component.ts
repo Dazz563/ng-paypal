@@ -3,6 +3,7 @@ import {CategoryModel, ProductModel, ProductService} from '../services/product.s
 import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMap} from 'rxjs';
 import {viewProductDialog} from './view-product/view-product.component';
 import {MatDialog} from '@angular/material/dialog';
+import {AuthService} from '../services/auth.service';
 
 @Component({
 	selector: 'app-shop',
@@ -10,14 +11,21 @@ import {MatDialog} from '@angular/material/dialog';
 	styleUrls: ['./shop.component.scss'],
 })
 export class ShopComponent implements OnInit, AfterViewInit {
+	testRefresh() {
+		this.authService.refreshToken();
+	}
 	products: ProductModel[] = [];
 	categories$!: Observable<CategoryModel[]>;
+
+	// auth
+	isLogin = true;
 
 	// search input
 	@ViewChild('searchInput') searchInput!: ElementRef;
 
 	constructor(
 		private productService: ProductService, //
+		private authService: AuthService,
 		private modal: MatDialog
 	) {}
 
@@ -50,9 +58,24 @@ export class ShopComponent implements OnInit, AfterViewInit {
 	}
 
 	getProducts() {
-		this.productService.getAllProducts().subscribe((res) => {
-			this.products = res;
-			console.log(res);
+		this.productService.getAllProducts().subscribe({
+			next: (res) => {
+				this.products = res;
+				console.log(res);
+			},
+			error: (err) => {
+				if (err.message === 'Invalid token') {
+					console.log('Invalid token in product component');
+
+					// const result = confirm('Your session has expired. Please login again.');
+					// if (result) {
+					// 	this.authService.refreshToken();
+					// 	setTimeout(() => {
+					// 		this.getProducts();
+					// 	}, 1000);
+					// }
+				}
+			},
 		});
 	}
 
@@ -83,5 +106,9 @@ export class ShopComponent implements OnInit, AfterViewInit {
 				console.log(err);
 			},
 		});
+	}
+
+	onAuthStateChanged() {
+		this.isLogin = !this.isLogin;
 	}
 }
