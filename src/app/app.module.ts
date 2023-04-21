@@ -14,10 +14,17 @@ import {SharedModule} from './shared/shared.module';
 import {ViewProductComponent} from './shop/view-product/view-product.component';
 import {RegisterComponent} from './auth/register/register.component';
 import {LoginComponent} from './auth/login/login.component';
-import {AuthInterceptorService} from './services/auth.interceptor';
+import {AuthInterceptor} from './services/auth.interceptor';
 
 @NgModule({
-	declarations: [AppComponent, ShoppingCartComponent, ShopComponent, ViewProductComponent, RegisterComponent, LoginComponent],
+	declarations: [
+		AppComponent, //
+		ShoppingCartComponent,
+		ShopComponent,
+		ViewProductComponent,
+		RegisterComponent,
+		LoginComponent,
+	],
 	imports: [
 		BrowserModule, //
 		AppRoutingModule,
@@ -30,7 +37,7 @@ import {AuthInterceptorService} from './services/auth.interceptor';
 	providers: [
 		{
 			provide: HTTP_INTERCEPTORS,
-			useClass: AuthInterceptorService,
+			useClass: AuthInterceptor,
 			multi: true,
 		},
 	],

@@ -4,6 +4,8 @@ import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMa
 import {viewProductDialog} from './view-product/view-product.component';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from '../services/auth.service';
+import {UserModel, UserService} from '../services/user.service';
+import {OrdersService} from '../services/orders.service';
 
 @Component({
 	selector: 'app-shop',
@@ -11,9 +13,6 @@ import {AuthService} from '../services/auth.service';
 	styleUrls: ['./shop.component.scss'],
 })
 export class ShopComponent implements OnInit, AfterViewInit {
-	testRefresh() {
-		this.authService.refreshToken();
-	}
 	products: ProductModel[] = [];
 	categories$!: Observable<CategoryModel[]>;
 
@@ -25,13 +24,17 @@ export class ShopComponent implements OnInit, AfterViewInit {
 
 	constructor(
 		private productService: ProductService, //
-		private authService: AuthService,
+		public authService: AuthService,
+		private userservice: UserService,
+		private orderService: OrdersService,
 		private modal: MatDialog
 	) {}
 
 	ngOnInit(): void {
 		this.getProducts();
+		// this.getUserOrders();
 		this.categories$ = this.productService.getAllCategories();
+		// Below is just testing will need updating for all products
 		this.productService.getByCategoriesId(2).subscribe((res) => console.log(res));
 	}
 
@@ -61,21 +64,9 @@ export class ShopComponent implements OnInit, AfterViewInit {
 		this.productService.getAllProducts().subscribe({
 			next: (res) => {
 				this.products = res;
-				console.log(res);
+				// console.log(res);
 			},
-			error: (err) => {
-				if (err.message === 'Invalid token') {
-					console.log('Invalid token in product component');
-
-					// const result = confirm('Your session has expired. Please login again.');
-					// if (result) {
-					// 	this.authService.refreshToken();
-					// 	setTimeout(() => {
-					// 		this.getProducts();
-					// 	}, 1000);
-					// }
-				}
-			},
+			error: (err) => {},
 		});
 	}
 
@@ -86,6 +77,7 @@ export class ShopComponent implements OnInit, AfterViewInit {
 		});
 	}
 
+	// UPDATE CODE BELOW TO USE ORDER SERVICE
 	// Add a product to the cart
 	addToCart(product: ProductModel) {
 		if (!this.productService.productInCart(product)) {

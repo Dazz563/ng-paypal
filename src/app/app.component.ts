@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ProductService} from './services/product.service';
+import {AuthService} from './services/auth.service';
+import {OrdersService} from './services/orders.service';
 
 @Component({
 	selector: 'app-root',
@@ -7,12 +9,15 @@ import {ProductService} from './services/product.service';
 	styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-	cardCount = 0;
-	constructor(public productService: ProductService) {}
-	ngOnInit(): void {
-		this.productService.cartCount$.subscribe((res) => {
-			console.log(res);
-			this.cardCount = res;
-		});
+	constructor(
+		public productService: ProductService, //
+		public authService: AuthService,
+		public orderService: OrdersService
+	) {}
+
+	ngOnInit(): void {}
+
+	logout() {
+		this.authService.logout();
 	}
 }

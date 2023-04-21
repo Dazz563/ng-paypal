@@ -9,8 +9,11 @@
 	<button routerLink="/shop" mat-icon-button>
 		<mat-icon>storefront</mat-icon>
 	</button>
-	<button class="cart-btn" routerLink="/shopping-cart" mat-icon-button [matBadge]="cardCount" [matBadgeHidden]="cardCount === 0" matBadgePosition="below after" matBadgeSize="medium" matBadgeColor="accent">
+	<button *ngIf="authService.isLoggedIn$ | async" class="cart-btn" routerLink="/shopping-cart" mat-icon-button [matBadge]="(orderService.orders$ | async)?.length" [matBadgeHidden]="(orderService.orders$ | async)?.length === 0" matBadgePosition="below after" matBadgeSize="medium" matBadgeColor="accent">
 		<mat-icon>shopping_cart</mat-icon>
+	</button>
+	<button (click)="logout()" routerLink="/shop" mat-icon-button>
+		<mat-icon>logout</mat-icon>
 	</button>
 </mat-toolbar>
 

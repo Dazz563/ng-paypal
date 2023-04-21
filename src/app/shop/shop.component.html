@@ -1,7 +1,6 @@
 <div class="home-container">
 	<div class="section-1">
 		<h2>Search and find deals</h2>
-		<button (click)="testRefresh()">Test refresh</button>
 		<p>Shop our products and specials</p>
 
 		<mat-form-field class="example-form-field" appearance="outline">
@@ -34,15 +33,17 @@
 		</mat-card>
 	</div>
 	<div class="section-3">
-		<h2>Sign up to shop & sell</h2>
-		<!-- REGISTER -->
-		<ng-container *ngIf="!isLogin">
-			<app-register (changeAuthStateEvent)="onAuthStateChanged()"></app-register>
-		</ng-container>
+		<ng-container *ngIf="authService.isLoggedOut$ | async">
+			<h2>Sign up to shop & sell</h2>
+			<!-- REGISTER -->
+			<ng-container *ngIf="!isLogin">
+				<app-register (changeAuthStateEvent)="onAuthStateChanged()"></app-register>
+			</ng-container>
 
-		<!-- LOGIN -->
-		<ng-container *ngIf="isLogin">
-			<app-login (changeAuthStateEvent)="onAuthStateChanged()"></app-login>
+			<!-- LOGIN -->
+			<ng-container *ngIf="isLogin">
+				<app-login (changeAuthStateEvent)="onAuthStateChanged()"></app-login>
+			</ng-container>
 		</ng-container>
 	</div>
 </div>

@@ -1,7 +1,10 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, map, tap} from 'rxjs';
+import {BehaviorSubject, Observable, map, tap} from 'rxjs';
 import {environment} from 'src/environments/environment.development';
+import {UserModel, UserService} from './user.service';
+
+const USER_DATA = 'user_details';
 
 export interface AuthCredentails {
 	email: string;
@@ -12,36 +15,61 @@ export interface AuthCredentails {
 	providedIn: 'root',
 })
 export class AuthService {
-	private tokenSubject$ = new BehaviorSubject<string>('');
-	token$ = this.tokenSubject$.asObservable();
+	// private userSubject$ = new BehaviorSubject<UserModel | null>(null);
+	// user$ = this.userSubject$.asObservable();
 
-	constructor(private http: HttpClient) {}
+	isLoggedIn$: Observable<boolean>;
+	isLoggedOut$: Observable<boolean>;
 
-	login(creds: AuthCredentails) {
-		return this.http
-			.post<any>(`${environment.apiUrl}/auth/login`, creds, {withCredentials: true})
-			.pipe(
-				map((res: any) => res['accessToken']),
-				tap((token) => {
-					localStorage.setItem('jwt_token', token);
-				})
-			)
-			.subscribe({
-				next: (accessToken: string) => {
-					this.tokenSubject$.next(accessToken);
+	constructor(
+		private http: HttpClient, //
+		private userService: UserService
+	) {
+		// observables set for gen. access & auth guard
+		this.isLoggedIn$ = this.userService.user$.pipe(map((user) => !!user));
+		this.isLoggedOut$ = this.isLoggedIn$.pipe(map((loggedIn) => !loggedIn));
+
+		// checking auth status from local storage
+		const user = localStorage.getItem(USER_DATA);
+
+		if (user && user != 'undefined') {
+			this.userService.getUser(JSON.parse(user).id).subscribe({
+				next: (user: UserModel) => {
+					localStorage.setItem(USER_DATA, JSON.stringify(user));
 				},
-				error: (err) => {
-					console.log(err);
-				},
+				error: (err) => {},
 			});
+		}
 	}
 
-	refreshToken() {
-		this.http.get(`${environment.apiUrl}/auth/refresh-token`, {withCredentials: true}).subscribe({
+	login(creds: AuthCredentails) {
+		return this.http.post<any>(`${environment.apiUrl}/auth/login`, creds, {withCredentials: true}).subscribe({
 			next: (res: any) => {
-				console.log('token on refresh', res);
-				localStorage.setItem('jwt_token', res);
-				this.tokenSubject$.next(res);
+				// set token in local storage
+				localStorage.setItem('jwt_token', res.accessToken);
+				// set user in local storage
+				this.userService.getUser(res.data.id).subscribe({
+					next: (user: UserModel) => {
+						console.log('get user res: ', user);
+
+						localStorage.setItem(USER_DATA, JSON.stringify(user));
+					},
+					error: (err) => {},
+				});
+			},
+			error: (err) => {
+				console.log(err);
+			},
+		});
+	}
+
+	logout() {
+		localStorage.removeItem('jwt_token');
+		localStorage.removeItem(USER_DATA);
+		this.userService.setUser(null);
+		this.http.delete(`${environment.apiUrl}/auth/logout`, {withCredentials: true}).subscribe({
+			next: (res: any) => {
+				console.log('logout', res);
 			},
 			error: (err) => {
 				console.log(err);
