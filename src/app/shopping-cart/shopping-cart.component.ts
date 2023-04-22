@@ -3,6 +3,8 @@ import {IPayPalConfig, ICreateOrderRequest} from 'ngx-paypal'; // Import the nec
 import {environment} from 'src/environments/environment.development'; // Import the environment configuration
 import {ProductModel, ProductService} from '../services/product.service';
 import {Router} from '@angular/router';
+import {OrderModel, OrdersService} from '../services/orders.service';
+import {map, take} from 'rxjs';
 
 @Component({
 	selector: 'app-shopping-cart',
@@ -16,22 +18,18 @@ export class ShoppingCartComponent implements OnInit {
 	items: ProductModel[] = JSON.parse(localStorage.getItem('cart_items') as any) || []; // Define a value property that will come from the cart or order
 	isLoading = true;
 
-	cartList: ProductModel[] = [];
 	subTotal!: number;
 
 	constructor(
 		private router: Router, //
-		private productService: ProductService
+		private productService: ProductService,
+		public orderService: OrdersService
 	) {}
 	ngOnInit(): void {
 		setTimeout(() => {
 			this.initConfig(); // Call the initConfig method to set up the PayPal configuration
 			this.isLoading = false;
 		}, 1000);
-
-		// Get the cart list from the product service
-		this.productService.loadCart();
-		this.cartList = this.productService.getCartList();
 	}
 
 	private initConfig(): void {
@@ -122,32 +120,38 @@ export class ShoppingCartComponent implements OnInit {
 	}
 
 	get calcTotal() {
-		return this.cartList.reduce(
-			(sum, item) => ({
-				quantity: 1,
-				price: sum.price + (item?.quantity || 0) * (item?.price || 0),
-			}),
-			{quantity: 1, price: 0}
-		).price;
+		return this.orderService.orders$.pipe(
+			map(
+				(orders) =>
+					orders.reduce(
+						(sum, order) => ({
+							quantity: 1,
+							price: sum.price + (order.quantity || 0) * (order.product.price || 0),
+						}),
+						{quantity: 1, price: 0}
+					).price
+			)
+		);
 	}
 
 	// Update the quantity of a product in the cart
-	changeQuantity(item: ProductModel, idx: number) {
-		const qty = item.quantity;
-		const amt = item.price;
+	changeQuantity(item: any, idx: number) {
+		this.orderService.orders$.pipe(take(1)).subscribe((orders) => {
+			const qty = item.quantity;
+			const amt = item.price;
 
-		this.subTotal = amt * qty!;
+			this.subTotal = amt * qty!;
 
-		this.productService.saveCart();
+			const updatedOrders = [...orders];
+			let updatedOrder = updatedOrders[idx];
+			updatedOrder.quantity = qty;
+			this.orderService.updateOrderQuantity(updatedOrders, updatedOrder);
+			console.log('updatedOrders', updatedOrders);
+		});
 	}
 
 	// Remove a product from the cart
-	removeFromCart(item: ProductModel) {
-		this.productService.removeItemFromCart(item);
-		this.cartList = this.productService.getCartList();
-	}
-
-	checkout() {
-		localStorage.setItem('cart_total', JSON.stringify(this.calcTotal));
+	removeFromCart(item: OrderModel) {
+		this.orderService.removeOrder(item.id);
 	}
 }

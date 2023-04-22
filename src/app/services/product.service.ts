@@ -38,11 +38,7 @@ export interface ReviewModel {
 })
 export class ProductService {
 	private cartTotal$ = new BehaviorSubject<number>(0);
-	constructor(private http: HttpClient) {
-		this.loadCart();
-		let cartItems = JSON.parse(localStorage.getItem('cart_items') as any) || [];
-		this.cartTotal$.next(cartItems.length);
-	}
+	constructor(private http: HttpClient) {}
 
 	cartCount$ = this.cartTotal$.asObservable();
 	cartList: any[] = [];
@@ -74,56 +70,5 @@ export class ProductService {
 
 	searchProducts(term: string) {
 		return this.http.get(`${environment.apiUrl}/product/search/${term}`).pipe(map((res: any) => res['data']));
-	}
-
-	// Cart Logic
-
-	getCartList() {
-		return this.cartList;
-	}
-
-	saveCart() {
-		localStorage.setItem('cart_items', JSON.stringify(this.cartList));
-	}
-
-	addToCart(product: ProductModel) {
-		let productInCart = this.cartList.find((p) => p.id === product.id);
-		if (productInCart) {
-			return;
-		} else {
-			productInCart = {...product, quantity: 1};
-			this.cartList.push(productInCart);
-			this.saveCart();
-			this.cartTotal$.next(this.cartList.length);
-		}
-	}
-
-	increaseCartQuantity() {
-		this.cartTotal$.next(this.cartTotal$.value + 1);
-	}
-
-	loadCart() {
-		this.cartList = JSON.parse(localStorage.getItem('cart_items') as any) || [];
-	}
-
-	productInCart(product: any) {
-		return this.cartList.find((p) => p.id === product.id) !== undefined;
-	}
-
-	removeItemFromCart(product: ProductModel) {
-		const index = this.cartList.findIndex((p) => p.id === product.id);
-
-		if (index > -1) {
-			// Remove the product from the cart without updating its quantity
-			this.cartList.splice(index, 1);
-			this.saveCart();
-		}
-
-		// Update cart total
-		this.cartTotal$.next(this.cartList.length);
-	}
-
-	clearProducts() {
-		localStorage.clear();
 	}
 }

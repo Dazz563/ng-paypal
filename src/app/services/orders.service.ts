@@ -36,9 +36,49 @@ export class OrdersService {
 				})
 			)
 			.subscribe((orders: OrderModel[]) => {
+				console.log('orders: ', orders);
+
 				this.orderSubject$.next(orders);
 			});
 	}
 
-	getAllOrders() {}
+	addOrder(orders: OrderModel[], order: any) {
+		console.log('new orders: ', order);
+		this.http
+			.post(`${environment.apiUrl}/order`, order)
+			.pipe(map((res: any) => res['data']))
+			.subscribe({
+				next: (res: any) => {
+					console.log('res: ', res);
+					this.orderSubject$.next([...orders, res]);
+					// after save to DB
+					console.log('orders subject: ', this.orderSubject$.getValue());
+				},
+				error: (err) => {},
+			});
+	}
+
+	removeOrder(id: number) {
+		this.http.delete(`${environment.apiUrl}/order/${id}`).subscribe({
+			next: (res: any) => {
+				this.orderSubject$.next(this.orderSubject$.value.filter((order) => order.id !== id));
+			},
+			error: (err) => {},
+		});
+	}
+
+	updateOrderQuantity(orders: OrderModel[], orderUpdated: OrderModel) {
+		this.orderSubject$.next(orders);
+
+		this.http.patch(`${environment.apiUrl}/order/${orderUpdated.id}`, orderUpdated).subscribe({
+			next: (res: any) => {
+				// console.log('res: ', res);
+			},
+			error: (err) => {},
+		});
+	}
+
+	productExistsInOrders(product: ProductModel, orders: OrderModel[]) {
+		return orders.find((order) => order.product.id === product.id) !== undefined;
+	}
 }

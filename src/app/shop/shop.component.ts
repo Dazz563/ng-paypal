@@ -1,10 +1,10 @@
 import {Component, OnInit, AfterViewInit, ViewChild, ElementRef} from '@angular/core';
 import {CategoryModel, ProductModel, ProductService} from '../services/product.service';
-import {Observable, debounceTime, distinctUntilChanged, fromEvent, map, switchMap} from 'rxjs';
+import {Observable, debounceTime, distinctUntilChanged, fromEvent, switchMap, take} from 'rxjs';
 import {viewProductDialog} from './view-product/view-product.component';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from '../services/auth.service';
-import {UserModel, UserService} from '../services/user.service';
+import {UserService} from '../services/user.service';
 import {OrdersService} from '../services/orders.service';
 
 @Component({
@@ -79,13 +79,24 @@ export class ShopComponent implements OnInit, AfterViewInit {
 
 	// UPDATE CODE BELOW TO USE ORDER SERVICE
 	// Add a product to the cart
-	addToCart(product: ProductModel) {
-		if (!this.productService.productInCart(product)) {
-			product.quantity = 1;
-			this.productService.addToCart(product);
-			// this.cartList = [...this.productService.getCartList()];
-			// this.productService.increaseCartQuantity();
-		}
+	addItemToOrder(product: ProductModel) {
+		this.orderService.orders$.pipe(take(1)).subscribe((orders) => {
+			console.log('orders', orders);
+
+			const existingOrder = orders.find((order) => order.product.id === product.id);
+			if (existingOrder) {
+				// Product already exists in the orders
+				return;
+			} else {
+				// Product doesn't exist in the orders
+				this.userservice.user$.pipe(take(1)).subscribe((user) => {
+					if (user) {
+						const newOrder = {productId: product.id, quantity: 1, userId: user.id};
+						this.orderService.addOrder(orders, newOrder);
+					}
+				});
+			}
+		});
 	}
 
 	viewProduct(product: ProductModel) {

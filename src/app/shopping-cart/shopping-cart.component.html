@@ -1,15 +1,15 @@
 <div class="shop-cart-container">
 	<div class="cart-details">
-		<h3 *ngIf="cartList.length > 0">Your Cart</h3>
-		<h3 *ngIf="cartList.length === 0">Oh No! Your cart is empty, go shopping!</h3>
-		<div class="cart-item" *ngFor="let item of cartList; let i = index">
+		<h3 *ngIf="(orderService.orders$ | async)!.length > 0">Your Cart</h3>
+		<h3 *ngIf="(orderService.orders$ | async)!.length === 0">Oh No! Your cart is empty, go shopping!</h3>
+		<div class="cart-item" *ngFor="let item of this.orderService.orders$ | async; let i = index">
 			<div class="cart-item-header">
-				<p>{{ item.name }} {{ item.price ? (item.price | currency) : '' }}</p>
+				<p>{{ item.product.name }} {{ item.product.price ? (item.product.price | currency) : '' }}</p>
 				<button mat-icon-button color="warn" (click)="removeFromCart(item)">
 					<mat-icon>close</mat-icon>
 				</button>
 			</div>
-			<p>{{ item.longDescription }}</p>
+			<p>{{ item.product.longDescription }}</p>
 			<div>
 				<mat-form-field style="width: 100px" appearance="outline">
 					<mat-label>Quantity</mat-label>
@@ -18,16 +18,16 @@
 			</div>
 
 			<div class="cart-footer">
-				<p>Total ${{ item.quantity && item.price ? (item.quantity * item.price | number : '1.2-2') : '' }}</p>
+				<p>Total ${{ item.quantity && item.product.price ? (item.quantity * item.product.price | number : '1.2-2') : '' }}</p>
 			</div>
 			<hr />
 		</div>
 	</div>
-	<div *ngIf="cartList.length > 0" class="paypal-details">
+	<div *ngIf="(orderService.orders$ | async)!.length > 0" class="paypal-details">
 		<div class="card">
 			<div class="total">
 				<h2>Cart total</h2>
-				<h2>${{ calcTotal | number : '1.2-2' }}</h2>
+				<h2>{{ calcTotal | async | currency }}</h2>
 			</div>
 			<div style="margin: auto" *ngIf="isLoading" class="spinner"></div>
 			<ngx-paypal [config]="payPalConfig"></ngx-paypal>
